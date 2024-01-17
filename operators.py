@@ -25,6 +25,29 @@ def checkPrereqs(context):
         return True
     return False
 
+class ResetShapeKeysOperator(Operator, ImportHelper):
+    """Resets all shape keys in a selected object"""
+    bl_idname = "scene.reset_shape_keys"
+    bl_label = "Reset shape keys"
+    
+    def execute(self, context):
+        obj = context.object
+        shape_keys = obj.data.shape_keys
+        
+        if not shape_keys:
+            print("No shape keys in object", obj.name)
+            return {'CANCELLED'}
+        
+        print("Resetting blendshapes in object", obj.name)
+        
+        for key_block in shape_keys.key_blocks:
+            # print("Shape key:", key_block.name, key_block.value)
+            key_block.value = 0
+            
+            # print("path", key_block.path_from_id("value"))
+
+        return {'FINISHED'}
+
 class LoadCSVOperator(Operator, ImportHelper):
     bl_idname = "scene.load_csv_operator"
     bl_label = "Load from CSV"
@@ -384,5 +407,37 @@ class LiveLinkFacePanel(bpy.types.Panel):
         box.operator("scene.connect_operator", text="Disconnect" if llf.instance is not None and llf.instance.listening else "Connect")
         box = self.layout.box()
         load_csv = box.operator("scene.load_csv_operator")
+
+class ShapeKeysPanel(bpy.types.Panel):
+    """Creates a Panel in the scene context of the properties editor"""
+    bl_idname = "VIEW3D_PT_llf_shape_keys"
+    bl_label = "Shape Keys"
+    bl_category = 'LiveLinkFace'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    # bl_context = "objectmode"
+    bl_options = {"HEADER_LAYOUT_EXPAND"}
+    
+    @classmethod
+    def poll(cls, context):
+        # Should only appear if object exists and has shape keys
+        return context.object is not None and context.object.data.shape_keys is not None
+
+    def draw(self, context):
+        layout = self.layout
         
+        obj = context.object
+        shape_keys = obj.data.shape_keys
+        
+        if not shape_keys:
+            layout.label(text='No shape keys found')
+        else:
+            row = layout.row()
+            row.label(text='Target:')
+            box = row.box()
+            box.scale_x = 2.0
+            box.label(text=obj.name)
+            
+            row = layout.row()
+            row.operator("scene.reset_shape_keys")
 

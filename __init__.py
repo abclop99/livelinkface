@@ -8,7 +8,7 @@ bl_info = {
 
 import bpy
 
-from livelinkface.operators import LiveLinkFacePanel, ConnectOperator, LoadCSVOperator, CUSTOM_OT_actions, CUSTOM_OT_addViewportSelection, CUSTOM_OT_printItems, CUSTOM_OT_clearList, CUSTOM_OT_removeDuplicates, CUSTOM_OT_selectItems, CUSTOM_OT_deleteObject, CUSTOM_UL_items
+from livelinkface.operators import LiveLinkFacePanel, ShapeKeysPanel, ResetShapeKeysOperator, ConnectOperator, LoadCSVOperator, CUSTOM_OT_actions, CUSTOM_OT_addViewportSelection, CUSTOM_OT_printItems, CUSTOM_OT_clearList, CUSTOM_OT_removeDuplicates, CUSTOM_OT_selectItems, CUSTOM_OT_deleteObject, CUSTOM_UL_items
 
 class ObjectSlot(bpy.types.PropertyGroup):
     obj: bpy.props.PointerProperty(name="Object",type=bpy.types.Object)
@@ -16,6 +16,8 @@ class ObjectSlot(bpy.types.PropertyGroup):
 
 classes = (
     LiveLinkFacePanel, 
+    ShapeKeysPanel,
+    ResetShapeKeysOperator,
     ConnectOperator, 
     LoadCSVOperator, 
     ObjectSlot,
