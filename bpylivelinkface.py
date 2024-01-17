@@ -67,6 +67,17 @@ class LiveLinkTarget:
                 
         print(f"Created {len(self.custom_prop_frames)} frames for {len(self.custom_props)} custom properties")
         if action_name is not None:
+            
+            # If the action name already exists, append a number to make it unique
+            if f"{action_name}_shapekey" in bpy.data.actions.keys():
+                keys = bpy.data.actions.keys()
+
+                # Please don't create more than this 10000 actions with the same name using this!
+                for index in range(1,10000):
+                    if f"{action_name}.{index:03d}_shapekey" not in keys:
+                        action_name = f"{action_name}.{index:03d}"
+                        break
+
             self.create_action(action_name, num_frames)
             
     '''
@@ -119,7 +130,7 @@ class LiveLinkTarget:
 
         num_frames = len(csvdata) - 1
 
-        targets = [LiveLinkTarget(target, num_frames, action_name=action_name) for target in targets]
+        targets = [LiveLinkTarget(target, num_frames, action_name=f"{target.name}_{action_name}") for target in targets]
         for idx,blendshape in enumerate(LIVE_LINK_FACE_HEADER):
             if idx < 2:
                 continue
@@ -158,6 +169,8 @@ class LiveLinkTarget:
             fc.keyframe_points.foreach_set('co',frame_data)
        
     def create_action(self, action_name, num_frames):
+        
+        assert f"{action_name}_shapekey" not in bpy.data.actions.keys()
     
         # create a new Action so we can directly create fcurves and set the keyframe points
         try:
