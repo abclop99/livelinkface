@@ -25,7 +25,7 @@ def checkPrereqs(context):
         return True
     return False
 
-class ResetShapeKeysOperator(Operator, ImportHelper):
+class ResetShapeKeysOperator(Operator):
     """Reset all shape keys in the selected object"""
     bl_idname = "scene.reset_shape_keys"
     bl_label = "Reset shape keys"
