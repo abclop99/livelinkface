@@ -423,7 +423,12 @@ class ShapeKeysPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         # Should only appear if object exists and has shape keys
-        return context.object is not None and context.object.data.shape_keys is not None
+        if context.object is None:
+            return False
+        elif context.object.data.shape_keys is None:
+            return False
+        else:
+            return True
 
     def draw(self, context):
         layout = self.layout
