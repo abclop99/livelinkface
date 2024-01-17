@@ -26,7 +26,7 @@ def checkPrereqs(context):
     return False
 
 class ResetShapeKeysOperator(Operator, ImportHelper):
-    """Resets all shape keys in a selected object"""
+    """Reset all shape keys in the selected object"""
     bl_idname = "scene.reset_shape_keys"
     bl_label = "Reset shape keys"
     
@@ -49,6 +49,7 @@ class ResetShapeKeysOperator(Operator, ImportHelper):
         return {'FINISHED'}
 
 class LoadCSVOperator(Operator, ImportHelper):
+    """Import recorded animations from a LiveLinkFace-formatted CSV file"""
     bl_idname = "scene.load_csv_operator"
     bl_label = "Load from CSV"
         
@@ -67,6 +68,7 @@ class LoadCSVOperator(Operator, ImportHelper):
         return {'CANCELLED'}
         
 class ConnectOperator(bpy.types.Operator):
+    """Connect to host"""
     bl_idname = "scene.connect_operator"
     bl_label = "connectbutton"
 
