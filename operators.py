@@ -1,5 +1,6 @@
 import bpy
-from bpy_extras.io_utils import ImportHelper
+from bpy_extras.io_utils import (ImportHelper,
+                                 ExportHelper,)
 
 from bpy.props import (IntProperty,
                        BoolProperty,
@@ -13,6 +14,8 @@ from bpy.types import (Operator,
                        UIList)
 
 import livelinkface.bpylivelinkface as llf
+
+import csv
 
 def checkPrereqs(context):
     if len(context.scene.ll_targets) == 0:
@@ -47,6 +50,75 @@ class ResetShapeKeysOperator(Operator):
             # print("path", key_block.path_from_id("value"))
 
         return {'FINISHED'}
+
+class ExportKeyframesCSVOperator(Operator, ExportHelper):
+    """Export keyframes to CSV"""
+    bl_idname = "scene.export_keyframes_csv_operator"
+    bl_label = "Export keyframes"
+
+    filename_ext = ".csv"
+    filter_glob: bpy.props.StringProperty(options={'HIDDEN'}, default='*.csv',maxlen=255)
+
+
+    def execute(self, context):
+        scene = context.scene
+        obj = context.object
+        shape_keys = obj.data.shape_keys
+        fps = scene.render.fps
+
+        print("Exporting blendshapes animations in", obj.name , "to", self.filepath)
+
+        if not shape_keys:
+            print("No shape keys in object", obj.name)
+            return {'CANCELLED'}
+
+        with open(self.filepath, 'w', newline='') as csvfile:
+            fieldnames = [
+                "Timecode", "BlendShapeCount", "eyeBlinkRight", "eyeLookDownRight", "eyeLookInRight", "eyeLookOutRight", "eyeLookUpRight", "eyeSquintRight", "eyeWideRight", "eyeBlinkLeft", "eyeLookDownLeft", "eyeLookInLeft", "eyeLookOutLeft", "eyeLookUpLeft", "eyeSquintLeft", "eyeWideLeft", "jawForward", "jawRight", "jawLeft", "jawOpen", "mouthClose", "mouthFunnel", "mouthPucker", "mouthRight", "mouthLeft", "mouthSmileRight", "mouthSmileLeft", "mouthFrownRight", "mouthFrownLeft", "mouthDimpleRight", "mouthDimpleLeft", "mouthStretchRight", "mouthStretchLeft", "mouthRollLower", "mouthRollUpper", "mouthShrugLower", "mouthShrugUpper", "mouthPressRight", "mouthPressLeft", "mouthLowerDownRight", "mouthLowerDownLeft", "mouthUpperUpRight", "mouthUpperUpLeft", "browDownRight", "browDownLeft", "browInnerUp", "browOuterUpRight", "browOuterUpLeft", "cheekPuff", "cheekSquintRight", "cheekSquintLeft", "noseSneerRight", "noseSneerLeft", "tongueOut", "HeadYaw", "HeadPitch", "HeadRoll", "LeftEyeYaw", "LeftEyePitch", "LeftEyeRoll", "RightEyeYaw", "RightEyePitch", "RightEyeRoll"
+            ]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval=0)
+
+            writer.writeheader()
+
+            for frame in range(scene.frame_start, scene.frame_end+1):
+                scene.frame_set(frame)
+                
+                timecode = bpy.utils.smpte_from_frame(frame)
+                print("\tFrame", frame, "at timecode", timecode)
+
+                row = {
+                    'Timecode': timecode, 'BlendShapeCount': 61,
+                    'HeadYaw': 0, 'HeadPitch': 0, 'HeadRoll': 0,
+                }
+                
+                for key_block in shape_keys.key_blocks:
+                    if key_block.name not in fieldnames:
+                        print("\t\tShape key", key_block.name, "not in fieldnames")
+                    else:
+                        print("\t\tShape key:", key_block.name, key_block.value)
+
+                        row[key_block.name] = key_block.value
+
+                writer.writerow(row)
+
+        # [fcurve.update() for fcurve in action.fcurves]
+
+        # [fcurve for fcurve in zip([fcurve for fcurve in action.fcurves])]
+
+        # for fcurve in action.fcurves:
+        #     fcurve.update() # Ensure keyframes are sorted in chronological order and handles are set correctly
+            
+        #     # print(fcurve.data_path, fcurve.keyframe_points)
+
+        #     fcurve_name = fcurve.data_path.split('"')[1]
+        #     fcurve_points = [(p[1].co[0], p[1].co[1]) for p in fcurve.keyframe_points.items()]
+
+        #     print(fcurve_name, fcurve_points)
+
+        #     keys.add(name)
+        
+        # TODO: The function
+        return {'CANCELLED'}
 
 class LoadCSVOperator(Operator, ImportHelper):
     """Import recorded animations from a LiveLinkFace-formatted CSV file"""
@@ -425,7 +497,9 @@ class ShapeKeysPanel(bpy.types.Panel):
         # Should only appear if object exists and has shape keys
         if context.object is None:
             return False
-        elif context.object.data.shape_keys is None:
+        elif context.object.type != "MESH":
+            return False
+        elif not context.object.data.shape_keys:
             return False
         else:
             return True
@@ -447,4 +521,7 @@ class ShapeKeysPanel(bpy.types.Panel):
             
             row = layout.row()
             row.operator("scene.reset_shape_keys")
+            
+            row = layout.row()
+            row.operator("scene.export_keyframes_csv_operator")
 
