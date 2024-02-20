@@ -101,24 +101,7 @@ class ExportKeyframesCSVOperator(Operator, ExportHelper):
 
                 writer.writerow(row)
 
-        # [fcurve.update() for fcurve in action.fcurves]
-
-        # [fcurve for fcurve in zip([fcurve for fcurve in action.fcurves])]
-
-        # for fcurve in action.fcurves:
-        #     fcurve.update() # Ensure keyframes are sorted in chronological order and handles are set correctly
-            
-        #     # print(fcurve.data_path, fcurve.keyframe_points)
-
-        #     fcurve_name = fcurve.data_path.split('"')[1]
-        #     fcurve_points = [(p[1].co[0], p[1].co[1]) for p in fcurve.keyframe_points.items()]
-
-        #     print(fcurve_name, fcurve_points)
-
-        #     keys.add(name)
-        
-        # TODO: The function
-        return {'CANCELLED'}
+        return {'FINISHED'}
 
 class LoadCSVOperator(Operator, ImportHelper):
     """Import recorded animations from a LiveLinkFace-formatted CSV file"""
